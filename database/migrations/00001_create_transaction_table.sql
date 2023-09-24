@@ -1,9 +1,9 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS "transaction" (
-    id              UUID            PRIMARY KEY,
+    id              TEXT            PRIMARY KEY,
     description     VARCHAR(50)     NOT NULL,
-    created_at      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    date            DATE            NOT NULL,
     amount          NUMERIC         NOT NULL
 );
 -- +goose StatementEnd

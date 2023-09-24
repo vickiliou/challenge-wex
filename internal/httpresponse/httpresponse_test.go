@@ -33,14 +33,14 @@ func TestRespondWithError(t *testing.T) {
 func TestRespondJSON(t *testing.T) {
 	w := httptest.NewRecorder()
 
-	someStruct := transaction.RequestResponse{
+	someStruct := transaction.RecordResponse{
 		ID: "1",
 	}
 
 	httpresponse.RespondJSON(w, http.StatusOK, someStruct)
 	assert.Equal(t, http.StatusOK, w.Code)
 
-	var got transaction.RequestResponse
+	var got transaction.RecordResponse
 	gotErr := json.NewDecoder(w.Body).Decode(&got)
 	assert.NoError(t, gotErr)
 	assert.Equal(t, someStruct, got)

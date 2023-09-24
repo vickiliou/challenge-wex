@@ -26,10 +26,10 @@ func NewRepository(db *sql.DB) *Repository {
 func (r *Repository) Create(ctx context.Context, txn transaction.Record) (string, error) {
 	_, err := r.db.ExecContext(ctx, `
 		INSERT INTO "transaction" 
-			(id, description, amount) 
+			(id, description, date, amount) 
 		VALUES 
-			(?, ?, ?)`,
-		txn.ID, txn.Description, txn.Amount)
+			(?, ?, ?, ?)`,
+		txn.ID, txn.Description, txn.TransactionDate, txn.Amount)
 
 	if err != nil {
 		return "", fmt.Errorf("database: failed to save transaction: %s", err.Error())
@@ -42,7 +42,7 @@ func (r *Repository) Create(ctx context.Context, txn transaction.Record) (string
 func (r *Repository) FindByID(ctx context.Context, id string) (*transaction.Retrieve, error) {
 	row := r.db.QueryRowContext(ctx, `
 		SELECT
-			id, description, created_at, amount
+			id, description, date, amount
 		FROM 
 			"transaction" 
 		WHERE 
@@ -50,7 +50,7 @@ func (r *Repository) FindByID(ctx context.Context, id string) (*transaction.Retr
 		id)
 
 	var txn transaction.Retrieve
-	if err := row.Scan(&txn.ID, &txn.Description, &txn.CreatedAt, &txn.Amount); err != nil {
+	if err := row.Scan(&txn.ID, &txn.Description, &txn.TransactionDate, &txn.Amount); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("database: %w: transaction with ID %s", httpresponse.ErrNotFound, id)
 		}

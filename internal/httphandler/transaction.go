@@ -13,7 +13,7 @@ import (
 )
 
 type service interface {
-	Create(ctx context.Context, input transaction.Request) (string, error)
+	Create(ctx context.Context, input transaction.RecordRequest) (string, error)
 	Get(ctx context.Context, id string) (*transaction.Retrieve, error)
 }
 
@@ -31,7 +31,8 @@ func NewHandler(svc service) *Handler {
 
 // Store handles the creation of a new transaction.
 func (h *Handler) Store(w http.ResponseWriter, r *http.Request) {
-	var input transaction.Request
+	var input transaction.RecordRequest
+
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		httpresponse.RespondWithError(w, http.StatusBadRequest, err)
 		httpresponse.LogError("Error decoding request body", http.StatusBadRequest, err)
@@ -52,7 +53,7 @@ func (h *Handler) Store(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	res := transaction.RequestResponse{
+	res := transaction.RecordResponse{
 		ID: id,
 	}
 

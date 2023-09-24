@@ -29,15 +29,16 @@ func NewService(repo repository, idGenerator uuidGenerator) *Service {
 }
 
 // Create creates a new transaction based on user input.
-func (s *Service) Create(ctx context.Context, input Request) (string, error) {
+func (s *Service) Create(ctx context.Context, input RecordRequest) (string, error) {
 	if err := input.validate(); err != nil {
 		return "", fmt.Errorf("%w: %s", httpresponse.ErrValidation, err.Error())
 	}
 
 	txn := Record{
-		ID:          s.idGenerator(),
-		Description: input.Description,
-		Amount:      input.Amount,
+		ID:              s.idGenerator(),
+		Description:     input.Description,
+		TransactionDate: input.TransactionDate,
+		Amount:          input.Amount,
 	}
 
 	return s.repo.Create(ctx, txn)

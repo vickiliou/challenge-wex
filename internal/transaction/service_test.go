@@ -40,7 +40,7 @@ func TestService_Create(t *testing.T) {
 		return id
 	}
 
-	input := Request{
+	input := RecordRequest{
 		Description: "food",
 		Amount:      20.47,
 	}
@@ -62,12 +62,12 @@ func TestService_Create_Error(t *testing.T) {
 	someErr := errors.New("some error")
 
 	testCases := map[string]struct {
-		input    Request
+		input    RecordRequest
 		mockRepo *stubRepository
 		wantErr  error
 	}{
 		"validation error": {
-			input: Request{
+			input: RecordRequest{
 				Description: "food",
 				Amount:      -5,
 			},
@@ -79,7 +79,7 @@ func TestService_Create_Error(t *testing.T) {
 			wantErr: httpresponse.ErrValidation,
 		},
 		"repository error": {
-			input: Request{
+			input: RecordRequest{
 				Description: "food",
 				Amount:      20.47,
 			},
@@ -112,10 +112,10 @@ func TestService_Get(t *testing.T) {
 	mockRepo := &stubRepository{
 		findByID: func(ctx context.Context, id string) (*Retrieve, error) {
 			return &Retrieve{
-				ID:          id,
-				Description: "food",
-				CreatedAt:   time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
-				Amount:      20.31,
+				ID:              id,
+				Description:     "food",
+				TransactionDate: time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
+				Amount:          20.31,
 			}, nil
 		},
 	}
@@ -129,10 +129,10 @@ func TestService_Get(t *testing.T) {
 	assert.NoError(t, gotErr)
 
 	want := &Retrieve{
-		ID:          id,
-		Description: "food",
-		CreatedAt:   time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
-		Amount:      20.31,
+		ID:              id,
+		Description:     "food",
+		TransactionDate: time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
+		Amount:          20.31,
 	}
 	assert.Equal(t, want, got)
 	assert.Equal(t, id, mockRepo.receivedFindInput)

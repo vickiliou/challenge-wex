@@ -18,13 +18,13 @@ import (
 )
 
 type stubService struct {
-	receivedInput transaction.Request
-	create        func(ctx context.Context, input transaction.Request) (string, error)
+	receivedInput transaction.RecordRequest
+	create        func(ctx context.Context, input transaction.RecordRequest) (string, error)
 	receivedID    string
 	get           func(ctx context.Context, id string) (*transaction.Retrieve, error)
 }
 
-func (s *stubService) Create(ctx context.Context, input transaction.Request) (string, error) {
+func (s *stubService) Create(ctx context.Context, input transaction.RecordRequest) (string, error) {
 	s.receivedInput = input
 	return s.create(ctx, input)
 }
@@ -38,12 +38,12 @@ func TestTransaction_Store(t *testing.T) {
 	id := "b62a64c9-0008-4148-99f6-9c8086a1dd42"
 
 	mockSvc := &stubService{
-		create: func(ctx context.Context, input transaction.Request) (string, error) {
+		create: func(ctx context.Context, input transaction.RecordRequest) (string, error) {
 			return id, nil
 		},
 	}
 
-	input := transaction.Request{
+	input := transaction.RecordRequest{
 		Description: "food",
 		Amount:      23.12,
 	}
@@ -55,12 +55,12 @@ func TestTransaction_Store(t *testing.T) {
 	h := NewHandler(mockSvc)
 	h.Store(w, req)
 
-	var got transaction.RequestResponse
+	var got transaction.RecordResponse
 	if err := json.Unmarshal(w.Body.Bytes(), &got); err != nil {
 		t.Fatalf("unmarshal error: %v", err)
 	}
 
-	want := transaction.RequestResponse{
+	want := transaction.RecordResponse{
 		ID: id,
 	}
 
@@ -83,7 +83,7 @@ func TestTransaction_Store_Error(t *testing.T) {
 				return jsonValue
 			},
 			mockSvc: &stubService{
-				create: func(ctx context.Context, input transaction.Request) (string, error) {
+				create: func(ctx context.Context, input transaction.RecordRequest) (string, error) {
 					return "", nil
 				},
 			},
@@ -92,14 +92,14 @@ func TestTransaction_Store_Error(t *testing.T) {
 		"validation error": {
 			reqBody: func() []byte {
 				jsonValue, _ := json.Marshal(
-					transaction.Request{
+					transaction.RecordRequest{
 						Description: "food",
 						Amount:      23.12,
 					})
 				return jsonValue
 			},
 			mockSvc: &stubService{
-				create: func(ctx context.Context, input transaction.Request) (string, error) {
+				create: func(ctx context.Context, input transaction.RecordRequest) (string, error) {
 					return "", httpresponse.ErrValidation
 				},
 			},
@@ -108,14 +108,14 @@ func TestTransaction_Store_Error(t *testing.T) {
 		"service error": {
 			reqBody: func() []byte {
 				jsonValue, _ := json.Marshal(
-					transaction.Request{
+					transaction.RecordRequest{
 						Description: "food",
 						Amount:      23.12,
 					})
 				return jsonValue
 			},
 			mockSvc: &stubService{
-				create: func(ctx context.Context, input transaction.Request) (string, error) {
+				create: func(ctx context.Context, input transaction.RecordRequest) (string, error) {
 					return "", someErr
 				},
 			},
@@ -142,10 +142,10 @@ func TestTransaction_Retrieve(t *testing.T) {
 	mockSvc := &stubService{
 		get: func(ctx context.Context, id string) (*transaction.Retrieve, error) {
 			return &transaction.Retrieve{
-				ID:          id,
-				Description: "food",
-				CreatedAt:   time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
-				Amount:      23.12,
+				ID:              id,
+				Description:     "food",
+				TransactionDate: time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
+				Amount:          23.12,
 			}, nil
 		},
 	}
@@ -165,10 +165,10 @@ func TestTransaction_Retrieve(t *testing.T) {
 	}
 
 	want := transaction.Retrieve{
-		ID:          id,
-		Description: "food",
-		CreatedAt:   time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
-		Amount:      23.12,
+		ID:              id,
+		Description:     "food",
+		TransactionDate: time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
+		Amount:          23.12,
 	}
 
 	assert.Equal(t, http.StatusOK, w.Code)

@@ -2,15 +2,17 @@ package transaction
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTransaction_Validate(t *testing.T) {
 	t.Run("valid input", func(t *testing.T) {
-		input := &Request{
-			Description: "food",
-			Amount:      40.50,
+		input := &RecordRequest{
+			Description:     "food",
+			TransactionDate: time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
+			Amount:          40.50,
 		}
 		gotErr := input.validate()
 		assert.Nil(t, gotErr)
@@ -19,23 +21,23 @@ func TestTransaction_Validate(t *testing.T) {
 
 func TestTransaction_Validate_Error(t *testing.T) {
 	testCases := map[string]struct {
-		input   *Request
+		input   *RecordRequest
 		wantErr string
 	}{
 		"description more than 50 characters": {
-			input: &Request{
+			input: &RecordRequest{
 				Description: "more than 50 characters, more than 50 characters!!!",
 			},
 			wantErr: "description must not exceed 50 characters",
 		},
 		"negative amount": {
-			input: &Request{
+			input: &RecordRequest{
 				Amount: -1,
 			},
 			wantErr: "amount must be a positive number",
 		},
 		"not rounded to the nearest cent": {
-			input: &Request{
+			input: &RecordRequest{
 				Amount: 9.555,
 			},
 			wantErr: "amount must be rounded to the nearest cent",
