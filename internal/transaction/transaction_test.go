@@ -30,6 +30,13 @@ func TestTransaction_Validate_Error(t *testing.T) {
 			},
 			wantErr: "description must not exceed 50 characters",
 		},
+
+		"invalid date": {
+			input: &RecordRequest{
+				TransactionDate: time.Date(-999, -99, -99, 0, 0, 0, 0, time.UTC),
+			},
+			wantErr: "invalid date format",
+		},
 		"negative amount": {
 			input: &RecordRequest{
 				Amount: -1,

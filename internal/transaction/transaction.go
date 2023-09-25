@@ -8,6 +8,14 @@ import (
 	"github.com/google/uuid"
 )
 
+// Transaction represents a transaction stored in the database.
+type Transaction struct {
+	ID              string
+	Description     string
+	TransactionDate time.Time
+	Amount          float64
+}
+
 // RecordRequest represents input data for a transaction request provided by the user.
 type RecordRequest struct {
 	Description     string    `json:"description"`
@@ -20,22 +28,6 @@ type RecordResponse struct {
 	ID string `json:"id"`
 }
 
-// Record represents a transaction record stored in the database.
-type Record struct {
-	ID              string
-	Description     string
-	TransactionDate time.Time
-	Amount          float64
-}
-
-// Retrieve represents a retrieved transaction from the database.
-type Retrieve struct {
-	ID              string    `json:"id"`
-	Description     string    `json:"description"`
-	TransactionDate time.Time `json:"transaction_date"`
-	Amount          float64   `json:"amount"`
-}
-
 // RetrieveResponse represents user transaction data.
 type RetrieveResponse struct {
 	ID              string    `json:"id"`
@@ -46,14 +38,14 @@ type RetrieveResponse struct {
 	ConvertedAmount float64   `json:"converted_amount"`
 }
 
-// validate checks if the store data is valid.
+// validate checks if the request data is valid.
 func (r *RecordRequest) validate() error {
 	if len(r.Description) > 50 {
 		return errors.New("description must not exceed 50 characters")
 	}
 
-	if !isValidDateFormat(r.TransactionDate) {
-		return errors.New("invalid date")
+	if !isValidDate(r.TransactionDate) {
+		return errors.New("invalid date format")
 	}
 
 	if r.Amount < 0 {
@@ -72,8 +64,13 @@ func isValidUUID(id string) bool {
 	return err == nil
 }
 
-func isValidDateFormat(date time.Time) bool {
-	expectedFormat := "2006-01-02"
-	formattedDate := date.Format(expectedFormat)
-	return formattedDate != date.String()
+// isValidDate checks if date is a valid RFC3339 formatted timestamp.
+func isValidDate(date time.Time) bool {
+	_, err := time.Parse(time.RFC3339, date.Format(time.RFC3339))
+	return err == nil
+}
+
+// roundTwoDecimal rounds a float number to two decimal places.
+func roundTwoDecimal(amount float64) float64 {
+	return math.Round(amount*100) / 100
 }

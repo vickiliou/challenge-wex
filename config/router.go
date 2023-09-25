@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/vickiliou/challenge-wex/gateway"
 	"github.com/vickiliou/challenge-wex/internal/httphandler"
 	"github.com/vickiliou/challenge-wex/internal/repository"
 	"github.com/vickiliou/challenge-wex/internal/transaction"
@@ -15,8 +16,9 @@ import (
 func SetupRouter(db *sql.DB) *chi.Mux {
 	r := chi.NewRouter()
 
+	gw := gateway.NewGateway(&http.Client{})
 	repo := repository.NewRepository(db)
-	svc := transaction.NewService(repo, uuid.NewString)
+	svc := transaction.NewService(repo, gw, uuid.NewString)
 	h := httphandler.NewHandler(svc)
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {

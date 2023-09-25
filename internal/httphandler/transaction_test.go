@@ -21,7 +21,7 @@ type stubService struct {
 	receivedInput transaction.RecordRequest
 	create        func(ctx context.Context, input transaction.RecordRequest) (string, error)
 	receivedID    string
-	get           func(ctx context.Context, id string) (*transaction.Retrieve, error)
+	get           func(ctx context.Context, id string) (*transaction.RetrieveResponse, error)
 }
 
 func (s *stubService) Create(ctx context.Context, input transaction.RecordRequest) (string, error) {
@@ -29,7 +29,7 @@ func (s *stubService) Create(ctx context.Context, input transaction.RecordReques
 	return s.create(ctx, input)
 }
 
-func (s *stubService) Get(ctx context.Context, id string) (*transaction.Retrieve, error) {
+func (s *stubService) Get(ctx context.Context, id string) (*transaction.RetrieveResponse, error) {
 	s.receivedID = id
 	return s.get(ctx, id)
 }
@@ -139,14 +139,18 @@ func TestTransaction_Store_Error(t *testing.T) {
 func TestTransaction_Retrieve(t *testing.T) {
 	id := "b62a64c9-0008-4148-99f6-9c8086a1dd42"
 
+	want := transaction.RetrieveResponse{
+		ID:              id,
+		Description:     "food",
+		TransactionDate: time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
+		OriginalAmount:  23.12,
+		ExchangeRate:    3.456,
+		ConvertedAmount: 79.90,
+	}
+
 	mockSvc := &stubService{
-		get: func(ctx context.Context, id string) (*transaction.Retrieve, error) {
-			return &transaction.Retrieve{
-				ID:              id,
-				Description:     "food",
-				TransactionDate: time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
-				Amount:          23.12,
-			}, nil
+		get: func(ctx context.Context, id string) (*transaction.RetrieveResponse, error) {
+			return &want, nil
 		},
 	}
 
@@ -159,16 +163,9 @@ func TestTransaction_Retrieve(t *testing.T) {
 	r.HandleFunc("/transactions/{id}", h.Retrieve)
 	r.ServeHTTP(w, req)
 
-	var got transaction.Retrieve
+	var got transaction.RetrieveResponse
 	if err := json.Unmarshal(w.Body.Bytes(), &got); err != nil {
 		t.Fatalf("unmarshal error: %v", err)
-	}
-
-	want := transaction.Retrieve{
-		ID:              id,
-		Description:     "food",
-		TransactionDate: time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
-		Amount:          23.12,
 	}
 
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -186,27 +183,35 @@ func TestTransaction_Retrieve_Error(t *testing.T) {
 	}{
 		"validation error": {
 			mockSvc: &stubService{
-				get: func(ctx context.Context, id string) (*transaction.Retrieve, error) {
+				get: func(ctx context.Context, id string) (*transaction.RetrieveResponse, error) {
 					return nil, httpresponse.ErrValidation
+				},
+			},
+			wantStatusCode: http.StatusBadRequest,
+		},
+		"not found error": {
+			mockSvc: &stubService{
+				get: func(ctx context.Context, id string) (*transaction.RetrieveResponse, error) {
+					return nil, httpresponse.ErrNotFound
+				},
+			},
+			wantStatusCode: http.StatusNotFound,
+		},
+		"no exchange rate": {
+			mockSvc: &stubService{
+				get: func(ctx context.Context, id string) (*transaction.RetrieveResponse, error) {
+					return nil, httpresponse.ErrConvertTargetCurrency
 				},
 			},
 			wantStatusCode: http.StatusBadRequest,
 		},
 		"service error": {
 			mockSvc: &stubService{
-				get: func(ctx context.Context, id string) (*transaction.Retrieve, error) {
+				get: func(ctx context.Context, id string) (*transaction.RetrieveResponse, error) {
 					return nil, someErr
 				},
 			},
 			wantStatusCode: http.StatusInternalServerError,
-		},
-		"not found error": {
-			mockSvc: &stubService{
-				get: func(ctx context.Context, id string) (*transaction.Retrieve, error) {
-					return nil, httpresponse.ErrNotFound
-				},
-			},
-			wantStatusCode: http.StatusNotFound,
 		},
 	}
 

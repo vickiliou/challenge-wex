@@ -23,7 +23,7 @@ func NewRepository(db *sql.DB) *Repository {
 }
 
 // Create inserts a transaction record into the database.
-func (r *Repository) Create(ctx context.Context, txn transaction.Record) (string, error) {
+func (r *Repository) Create(ctx context.Context, txn transaction.Transaction) (string, error) {
 	_, err := r.db.ExecContext(ctx, `
 		INSERT INTO "transaction" 
 			(id, description, date, amount) 
@@ -32,14 +32,14 @@ func (r *Repository) Create(ctx context.Context, txn transaction.Record) (string
 		txn.ID, txn.Description, txn.TransactionDate, txn.Amount)
 
 	if err != nil {
-		return "", fmt.Errorf("database: failed to save transaction: %s", err.Error())
+		return "", fmt.Errorf("failed to create transaction: %s", err.Error())
 	}
 
 	return txn.ID, nil
 }
 
 // FindByID retrieves a transaction record by its ID from the database.
-func (r *Repository) FindByID(ctx context.Context, id string) (*transaction.Retrieve, error) {
+func (r *Repository) FindByID(ctx context.Context, id string) (*transaction.Transaction, error) {
 	row := r.db.QueryRowContext(ctx, `
 		SELECT
 			id, description, date, amount
@@ -49,12 +49,12 @@ func (r *Repository) FindByID(ctx context.Context, id string) (*transaction.Retr
 			id = ?`,
 		id)
 
-	var txn transaction.Retrieve
+	var txn transaction.Transaction
 	if err := row.Scan(&txn.ID, &txn.Description, &txn.TransactionDate, &txn.Amount); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, fmt.Errorf("database: %w: transaction with ID %s", httpresponse.ErrNotFound, id)
+			return nil, fmt.Errorf("%w: transaction with ID %s", httpresponse.ErrNotFound, id)
 		}
-		return nil, fmt.Errorf("database: failed to retrieve transaction: %s", err.Error())
+		return nil, fmt.Errorf("failed to retrieve transaction: %s", err.Error())
 	}
 
 	return &txn, nil

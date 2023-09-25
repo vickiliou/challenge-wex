@@ -17,7 +17,7 @@ func TestTransaction_Create(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	txn := transaction.Record{
+	txn := transaction.Transaction{
 		ID:              "b62a64c9-0008-4148-99f6-9c8086a1dd42",
 		Description:     "food",
 		TransactionDate: time.Date(2023, time.September, 1, 0, 0, 0, 0, time.UTC),
@@ -43,7 +43,7 @@ func TestTransaction_Create_Error(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	txn := transaction.Record{
+	txn := transaction.Transaction{
 		ID:              "b62a64c9-0008-4148-99f6-9c8086a1dd42",
 		Description:     "food",
 		TransactionDate: time.Date(2023, time.September, 1, 0, 0, 0, 0, time.UTC),
@@ -68,7 +68,7 @@ func TestTransaction_FindByID(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	want := &transaction.Retrieve{
+	want := &transaction.Transaction{
 		ID:              id,
 		Description:     "food",
 		TransactionDate: time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),

@@ -7,11 +7,17 @@ import (
 )
 
 var (
-	// ErrValidation is an error indicating a validation failure.
+	// ErrValidation indicates a validation failure.
 	ErrValidation = errors.New("validation error")
 
-	// ErrNotFound is an error indicating that a resource was not found.
+	// ErrNotFound indicates that a resource was not found.
 	ErrNotFound = errors.New("not found")
+
+	// // ErrConvertTargetCurrency is returned when a currency cannot be converted to the target currency due to an empty exchange rate.
+	ErrConvertTargetCurrency = errors.New("cannot be converted to the target currency")
+
+	// ErrInvalidRequestPayload indicates that the http request payload is invalid.
+	ErrInvalidRequestPayload = errors.New("invalid request payload")
 )
 
 // LogError logs an error with additional information.

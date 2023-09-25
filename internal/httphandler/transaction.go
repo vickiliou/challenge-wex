@@ -14,7 +14,7 @@ import (
 
 type service interface {
 	Create(ctx context.Context, input transaction.RecordRequest) (string, error)
-	Get(ctx context.Context, id string) (*transaction.Retrieve, error)
+	Get(ctx context.Context, id string) (*transaction.RetrieveResponse, error)
 }
 
 // Handler is responsible for handling HTTP requests related to transactions.
@@ -34,7 +34,7 @@ func (h *Handler) Store(w http.ResponseWriter, r *http.Request) {
 	var input transaction.RecordRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		httpresponse.RespondWithError(w, http.StatusBadRequest, err)
+		httpresponse.RespondWithError(w, http.StatusBadRequest, httpresponse.ErrInvalidRequestPayload)
 		httpresponse.LogError("Error decoding request body", http.StatusBadRequest, err)
 		return
 	}
@@ -75,6 +75,10 @@ func (h *Handler) Retrieve(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, httpresponse.ErrNotFound):
 			httpresponse.RespondWithError(w, http.StatusNotFound, err)
 			httpresponse.LogError("Not found", http.StatusNotFound, err)
+			return
+		case errors.Is(err, httpresponse.ErrConvertTargetCurrency):
+			httpresponse.RespondWithError(w, http.StatusBadRequest, err)
+			httpresponse.LogError("Not found", http.StatusBadRequest, err)
 			return
 		default:
 			httpresponse.RespondWithError(w, http.StatusInternalServerError, err)
