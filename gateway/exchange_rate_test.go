@@ -74,7 +74,7 @@ func TestGetExchangeRate(t *testing.T) {
 			input := CurrencyExchangeRateRequest{
 				TransactionDate: time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
 				CurrencyCountry: "Canada",
-				CurrencyCode:    "Dollar",
+				Currency:        "Dollar",
 			}
 
 			got, gotErr := gw.GetExchangeRate(input)
@@ -143,7 +143,7 @@ func TestGetExchangeRate_Error(t *testing.T) {
 			input := CurrencyExchangeRateRequest{
 				TransactionDate: time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
 				CurrencyCountry: "Canada",
-				CurrencyCode:    "Dollar",
+				Currency:        "Dollar",
 			}
 
 			got, gotErr := gw.GetExchangeRate(input)

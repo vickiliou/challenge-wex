@@ -139,6 +139,8 @@ func TestTransaction_Store_Error(t *testing.T) {
 
 func TestTransaction_Retrieve(t *testing.T) {
 	id := "b62a64c9-0008-4148-99f6-9c8086a1dd42"
+	countryCurrency := "Brazil"
+	currency := "Real"
 
 	want := transaction.RetrieveResponse{
 		ID:              id,
@@ -155,15 +157,8 @@ func TestTransaction_Retrieve(t *testing.T) {
 		},
 	}
 
-	input := transaction.RetrieveRequest{
-		ID:              id,
-		CurrencyCountry: "Brazil",
-		CurrencyCode:    "Real",
-	}
-	body, _ := json.Marshal(input)
-
-	path := fmt.Sprintf("/transactions/%s", id)
-	req := httptest.NewRequest(http.MethodGet, path, bytes.NewReader(body))
+	path := fmt.Sprintf("/transactions/%s?country_currency=%s&currency=%s", id, countryCurrency, currency)
+	req := httptest.NewRequest(http.MethodGet, path, nil)
 	w := httptest.NewRecorder()
 
 	h := NewHandler(mockSvc)
@@ -178,8 +173,8 @@ func TestTransaction_Retrieve(t *testing.T) {
 
 	wantRetrievedRequest := transaction.RetrieveRequest{
 		ID:              id,
-		CurrencyCountry: input.CurrencyCountry,
-		CurrencyCode:    input.CurrencyCode,
+		CountryCurrency: countryCurrency,
+		Currency:        currency,
 	}
 
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -189,35 +184,15 @@ func TestTransaction_Retrieve(t *testing.T) {
 
 func TestTransaction_Retrieve_Error(t *testing.T) {
 	id := "b62a64c9-0008-4148-99f6-9c8086a1dd42"
+	countryCurrency := "Brazil"
+	currency := "Real"
 	someErr := errors.New("some error")
-	retrieveRequest := transaction.RetrieveRequest{
-		ID:              id,
-		CurrencyCountry: "Brazil",
-		CurrencyCode:    "Real",
-	}
 
 	testCases := map[string]struct {
-		reqBody        func() []byte
 		mockSvc        *stubService
 		wantStatusCode int
 	}{
-		"invalid json request body": {
-			reqBody: func() []byte {
-				jsonValue, _ := json.Marshal(",")
-				return jsonValue
-			},
-			mockSvc: &stubService{
-				get: func(ctx context.Context, input transaction.RetrieveRequest) (*transaction.RetrieveResponse, error) {
-					return nil, nil
-				},
-			},
-			wantStatusCode: http.StatusBadRequest,
-		},
 		"validation error": {
-			reqBody: func() []byte {
-				jsonValue, _ := json.Marshal(retrieveRequest)
-				return jsonValue
-			},
 			mockSvc: &stubService{
 				get: func(ctx context.Context, input transaction.RetrieveRequest) (*transaction.RetrieveResponse, error) {
 					return nil, httpresponse.ErrValidation
@@ -226,10 +201,6 @@ func TestTransaction_Retrieve_Error(t *testing.T) {
 			wantStatusCode: http.StatusBadRequest,
 		},
 		"not found error": {
-			reqBody: func() []byte {
-				jsonValue, _ := json.Marshal(retrieveRequest)
-				return jsonValue
-			},
 			mockSvc: &stubService{
 				get: func(ctx context.Context, input transaction.RetrieveRequest) (*transaction.RetrieveResponse, error) {
 					return nil, httpresponse.ErrNotFound
@@ -238,10 +209,6 @@ func TestTransaction_Retrieve_Error(t *testing.T) {
 			wantStatusCode: http.StatusNotFound,
 		},
 		"no exchange rate": {
-			reqBody: func() []byte {
-				jsonValue, _ := json.Marshal(retrieveRequest)
-				return jsonValue
-			},
 			mockSvc: &stubService{
 				get: func(ctx context.Context, input transaction.RetrieveRequest) (*transaction.RetrieveResponse, error) {
 					return nil, httpresponse.ErrConvertTargetCurrency
@@ -250,10 +217,6 @@ func TestTransaction_Retrieve_Error(t *testing.T) {
 			wantStatusCode: http.StatusBadRequest,
 		},
 		"service error": {
-			reqBody: func() []byte {
-				jsonValue, _ := json.Marshal(retrieveRequest)
-				return jsonValue
-			},
 			mockSvc: &stubService{
 				get: func(ctx context.Context, input transaction.RetrieveRequest) (*transaction.RetrieveResponse, error) {
 					return nil, someErr
@@ -265,9 +228,9 @@ func TestTransaction_Retrieve_Error(t *testing.T) {
 
 	for title, tc := range testCases {
 		t.Run(title, func(t *testing.T) {
-			path := fmt.Sprintf("/transactions/%s", id)
+			path := fmt.Sprintf("/transactions/%s?country_currency=%s&currency=%s", id, countryCurrency, currency)
 
-			req := httptest.NewRequest(http.MethodGet, path, bytes.NewReader(tc.reqBody()))
+			req := httptest.NewRequest(http.MethodGet, path, nil)
 			w := httptest.NewRecorder()
 
 			h := NewHandler(tc.mockSvc)

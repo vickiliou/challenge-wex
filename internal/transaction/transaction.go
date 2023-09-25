@@ -30,9 +30,9 @@ type RecordResponse struct {
 
 // RetrieveRequest represents a request to retrieve user transaction data.
 type RetrieveRequest struct {
-	ID              string `json:"id"`
-	CurrencyCountry string `json:"currency_country"`
-	CurrencyCode    string `json:"currency_code"`
+	ID              string
+	CountryCurrency string
+	Currency        string
 }
 
 // RetrieveResponse represents user transaction data.
@@ -71,12 +71,12 @@ func (r *RetrieveRequest) validate() error {
 	if isValidUUID(r.ID) {
 		return errors.New("invalid UUID")
 	}
-	if isEmpty(r.CurrencyCountry) {
+	if isEmpty(r.CountryCurrency) {
 		return errors.New("currency country is required")
 	}
 
-	if isEmpty(r.CurrencyCode) {
-		return errors.New("currency code is required")
+	if isEmpty(r.Currency) {
+		return errors.New("currency is required")
 	}
 	return nil
 }

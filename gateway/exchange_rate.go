@@ -21,7 +21,7 @@ const (
 type CurrencyExchangeRateRequest struct {
 	TransactionDate time.Time
 	CurrencyCountry string
-	CurrencyCode    string
+	Currency        string
 }
 
 // CurrencyExchangeRate represents currency exchange rate data.
@@ -88,7 +88,7 @@ func constructExchangeRateURL(input CurrencyExchangeRateRequest) string {
 	fmtTxnDate := input.TransactionDate.Format(dateFormat)
 
 	filterParam := fmt.Sprintf("&filter=country_currency_desc:eq:%s-%s,record_date:lte:%s,record_date:gte:%s",
-		input.CurrencyCountry, input.CurrencyCode, fmtTxnDate, sixMonthsAgo)
+		input.CurrencyCountry, input.Currency, fmtTxnDate, sixMonthsAgo)
 
 	url := baseURL + endpoint + fields + filterParam + sort
 

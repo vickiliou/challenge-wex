@@ -64,13 +64,9 @@ func (h *Handler) Store(w http.ResponseWriter, r *http.Request) {
 // Retrieve retrieves a transaction by its ID.
 func (h *Handler) Retrieve(w http.ResponseWriter, r *http.Request) {
 	input := transaction.RetrieveRequest{
-		ID: chi.URLParam(r, "id"),
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		httpresponse.RespondWithError(w, http.StatusBadRequest, httpresponse.ErrInvalidRequestPayload)
-		httpresponse.LogError("Error decoding request body", http.StatusBadRequest, err)
-		return
+		ID:              chi.URLParam(r, "id"),
+		CountryCurrency: r.URL.Query().Get("country_currency"),
+		Currency:        r.URL.Query().Get("currency"),
 	}
 
 	res, err := h.svc.Get(r.Context(), input)
