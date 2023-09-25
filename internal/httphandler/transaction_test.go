@@ -139,7 +139,7 @@ func TestTransaction_Store_Error(t *testing.T) {
 
 func TestTransaction_Retrieve(t *testing.T) {
 	id := "b62a64c9-0008-4148-99f6-9c8086a1dd42"
-	countryCurrency := "Brazil"
+	country := "Brazil"
 	currency := "Real"
 
 	want := transaction.RetrieveResponse{
@@ -157,7 +157,7 @@ func TestTransaction_Retrieve(t *testing.T) {
 		},
 	}
 
-	path := fmt.Sprintf("/transactions/%s?country_currency=%s&currency=%s", id, countryCurrency, currency)
+	path := fmt.Sprintf("/transactions/%s?country=%s&currency=%s", id, country, currency)
 	req := httptest.NewRequest(http.MethodGet, path, nil)
 	w := httptest.NewRecorder()
 
@@ -172,9 +172,9 @@ func TestTransaction_Retrieve(t *testing.T) {
 	}
 
 	wantRetrievedRequest := transaction.RetrieveRequest{
-		ID:              id,
-		CountryCurrency: countryCurrency,
-		Currency:        currency,
+		ID:       id,
+		Country:  country,
+		Currency: currency,
 	}
 
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -184,7 +184,7 @@ func TestTransaction_Retrieve(t *testing.T) {
 
 func TestTransaction_Retrieve_Error(t *testing.T) {
 	id := "b62a64c9-0008-4148-99f6-9c8086a1dd42"
-	countryCurrency := "Brazil"
+	country := "Brazil"
 	currency := "Real"
 	someErr := errors.New("some error")
 
@@ -228,7 +228,7 @@ func TestTransaction_Retrieve_Error(t *testing.T) {
 
 	for title, tc := range testCases {
 		t.Run(title, func(t *testing.T) {
-			path := fmt.Sprintf("/transactions/%s?country_currency=%s&currency=%s", id, countryCurrency, currency)
+			path := fmt.Sprintf("/transactions/%s?country=%s&currency=%s", id, country, currency)
 
 			req := httptest.NewRequest(http.MethodGet, path, nil)
 			w := httptest.NewRecorder()

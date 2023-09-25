@@ -73,7 +73,7 @@ func TestGetExchangeRate(t *testing.T) {
 			gw := NewGateway(mockClient)
 			input := CurrencyExchangeRateRequest{
 				TransactionDate: time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
-				CurrencyCountry: "Canada",
+				Country:         "Canada",
 				Currency:        "Dollar",
 			}
 
@@ -142,7 +142,7 @@ func TestGetExchangeRate_Error(t *testing.T) {
 
 			input := CurrencyExchangeRateRequest{
 				TransactionDate: time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
-				CurrencyCountry: "Canada",
+				Country:         "Canada",
 				Currency:        "Dollar",
 			}
 

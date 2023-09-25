@@ -65,7 +65,7 @@ func (s *Service) Get(ctx context.Context, input RetrieveRequest) (*RetrieveResp
 
 	inputGw := gateway.CurrencyExchangeRateRequest{
 		TransactionDate: txn.TransactionDate,
-		CurrencyCountry: input.CountryCurrency,
+		Country:         input.Country,
 		Currency:        input.Currency,
 	}
 

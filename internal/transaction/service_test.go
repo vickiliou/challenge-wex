@@ -150,9 +150,9 @@ func TestService_Get(t *testing.T) {
 	}
 
 	input := RetrieveRequest{
-		ID:              id,
-		CountryCurrency: "Brazil",
-		Currency:        "Real",
+		ID:       id,
+		Country:  "Brazil",
+		Currency: "Real",
 	}
 
 	svc := NewService(mockRepo, mockGw, mockIDGen)
@@ -170,7 +170,7 @@ func TestService_Get(t *testing.T) {
 
 	wantGwInput := gateway.CurrencyExchangeRateRequest{
 		TransactionDate: retrieve.TransactionDate,
-		CurrencyCountry: input.CountryCurrency,
+		Country:         input.Country,
 		Currency:        input.Currency,
 	}
 
@@ -190,9 +190,9 @@ func TestService_Get_Error(t *testing.T) {
 	}{
 		"validation error": {
 			input: RetrieveRequest{
-				ID:              "invalid-uuid",
-				CountryCurrency: "Brazil",
-				Currency:        "Real",
+				ID:       "invalid-uuid",
+				Country:  "Brazil",
+				Currency: "Real",
 			},
 			mockRepo: &stubRepository{
 				findByID: func(ctx context.Context, id string) (*Transaction, error) {
@@ -204,9 +204,9 @@ func TestService_Get_Error(t *testing.T) {
 		},
 		"repository error": {
 			input: RetrieveRequest{
-				ID:              "b62a64c9-0008-4148-99f6-9c8086a1dd42",
-				CountryCurrency: "Brazil",
-				Currency:        "Real",
+				ID:       "b62a64c9-0008-4148-99f6-9c8086a1dd42",
+				Country:  "Brazil",
+				Currency: "Real",
 			},
 			mockRepo: &stubRepository{
 				findByID: func(ctx context.Context, id string) (*Transaction, error) {
@@ -218,9 +218,9 @@ func TestService_Get_Error(t *testing.T) {
 		},
 		"gateway error": {
 			input: RetrieveRequest{
-				ID:              "b62a64c9-0008-4148-99f6-9c8086a1dd42",
-				CountryCurrency: "Brazil",
-				Currency:        "Real",
+				ID:       "b62a64c9-0008-4148-99f6-9c8086a1dd42",
+				Country:  "Brazil",
+				Currency: "Real",
 			},
 			mockRepo: &stubRepository{
 				findByID: func(ctx context.Context, id string) (*Transaction, error) {

@@ -30,9 +30,9 @@ type RecordResponse struct {
 
 // RetrieveRequest represents a request to retrieve user transaction data.
 type RetrieveRequest struct {
-	ID              string
-	CountryCurrency string
-	Currency        string
+	ID       string
+	Country  string
+	Currency string
 }
 
 // RetrieveResponse represents user transaction data.
@@ -71,7 +71,7 @@ func (r *RetrieveRequest) validate() error {
 	if isValidUUID(r.ID) {
 		return errors.New("invalid UUID")
 	}
-	if isEmpty(r.CountryCurrency) {
+	if isEmpty(r.Country) {
 		return errors.New("currency country is required")
 	}
 

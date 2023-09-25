@@ -100,9 +100,9 @@ func TestTransaction_RecordRequest_Validate_Error(t *testing.T) {
 func TestTransaction_RetrieveRequest_Validate(t *testing.T) {
 	t.Run("valid input", func(t *testing.T) {
 		input := &RetrieveRequest{
-			ID:              "b62a64c9-0008-4148-99f6-9c8086a1dd42",
-			CountryCurrency: "Brazil",
-			Currency:        "Real",
+			ID:       "b62a64c9-0008-4148-99f6-9c8086a1dd42",
+			Country:  "Brazil",
+			Currency: "Real",
 		}
 		gotErr := input.validate()
 		assert.Nil(t, gotErr)
@@ -111,7 +111,7 @@ func TestTransaction_RetrieveRequest_Validate(t *testing.T) {
 
 func TestTransaction_RetrieveRequest_Validate_Error(t *testing.T) {
 	id := "b62a64c9-0008-4148-99f6-9c8086a1dd42"
-	currencyCountry := "Brazil"
+	country := "Brazil"
 	currency := "Real"
 
 	testCases := map[string]struct {
@@ -120,25 +120,25 @@ func TestTransaction_RetrieveRequest_Validate_Error(t *testing.T) {
 	}{
 		"invalid uuid": {
 			input: &RetrieveRequest{
-				ID:              "invalid-uuid",
-				CountryCurrency: currencyCountry,
-				Currency:        currency,
+				ID:       "invalid-uuid",
+				Country:  country,
+				Currency: currency,
 			},
 			wantError: "invalid UUID",
 		},
 		"empty currency country": {
 			input: &RetrieveRequest{
-				ID:              id,
-				CountryCurrency: "",
-				Currency:        currency,
+				ID:       id,
+				Country:  "",
+				Currency: currency,
 			},
 			wantError: "required",
 		},
 		"empty currency": {
 			input: &RetrieveRequest{
-				ID:              id,
-				CountryCurrency: currencyCountry,
-				Currency:        "",
+				ID:       id,
+				Country:  country,
+				Currency: "",
 			},
 			wantError: "required",
 		},

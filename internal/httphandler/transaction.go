@@ -64,9 +64,9 @@ func (h *Handler) Store(w http.ResponseWriter, r *http.Request) {
 // Retrieve retrieves a transaction by its ID.
 func (h *Handler) Retrieve(w http.ResponseWriter, r *http.Request) {
 	input := transaction.RetrieveRequest{
-		ID:              chi.URLParam(r, "id"),
-		CountryCurrency: r.URL.Query().Get("country_currency"),
-		Currency:        r.URL.Query().Get("currency"),
+		ID:       chi.URLParam(r, "id"),
+		Country:  r.URL.Query().Get("country"),
+		Currency: r.URL.Query().Get("currency"),
 	}
 
 	res, err := h.svc.Get(r.Context(), input)
