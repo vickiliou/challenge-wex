@@ -44,8 +44,9 @@ func TestTransaction_Store(t *testing.T) {
 	}
 
 	input := transaction.RecordRequest{
-		Description: "food",
-		Amount:      23.12,
+		Description:     "food",
+		TransactionDate: time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
+		Amount:          23.12,
 	}
 	body, _ := json.Marshal(input)
 
@@ -56,9 +57,8 @@ func TestTransaction_Store(t *testing.T) {
 	h.Store(w, req)
 
 	var got transaction.RecordResponse
-	if err := json.Unmarshal(w.Body.Bytes(), &got); err != nil {
-		t.Fatalf("unmarshal error: %v", err)
-	}
+	err := json.Unmarshal(w.Body.Bytes(), &got)
+	assert.NoError(t, err)
 
 	want := transaction.RecordResponse{
 		ID: id,
@@ -109,8 +109,9 @@ func TestTransaction_Store_Error(t *testing.T) {
 			reqBody: func() []byte {
 				jsonValue, _ := json.Marshal(
 					transaction.RecordRequest{
-						Description: "food",
-						Amount:      23.12,
+						Description:     "food",
+						TransactionDate: time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
+						Amount:          23.12,
 					})
 				return jsonValue
 			},

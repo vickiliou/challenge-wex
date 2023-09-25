@@ -52,14 +52,16 @@ func TestService_Create(t *testing.T) {
 	}
 
 	input := RecordRequest{
-		Description: "food",
-		Amount:      20.47,
+		Description:     "food",
+		TransactionDate: time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
+		Amount:          20.47,
 	}
 
 	want := Transaction{
-		ID:          id,
-		Description: "food",
-		Amount:      20.47,
+		ID:              id,
+		Description:     input.Description,
+		TransactionDate: input.TransactionDate,
+		Amount:          input.Amount,
 	}
 
 	svc := NewService(mockRepo, nil, mockIDGen)
@@ -79,8 +81,9 @@ func TestService_Create_Error(t *testing.T) {
 	}{
 		"validation error": {
 			input: RecordRequest{
-				Description: "food",
-				Amount:      -5,
+				Description:     "food",
+				TransactionDate: time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
+				Amount:          -5,
 			},
 			mockRepo: &stubRepository{
 				create: func(ctx context.Context, txn Transaction) (string, error) {
@@ -91,8 +94,9 @@ func TestService_Create_Error(t *testing.T) {
 		},
 		"repository error": {
 			input: RecordRequest{
-				Description: "food",
-				Amount:      20.47,
+				Description:     "food",
+				TransactionDate: time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
+				Amount:          20.47,
 			},
 			mockRepo: &stubRepository{
 				create: func(ctx context.Context, txn Transaction) (string, error) {

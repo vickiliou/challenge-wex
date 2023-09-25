@@ -1,6 +1,7 @@
 package transaction
 
 import (
+	"math"
 	"testing"
 	"time"
 
@@ -20,41 +21,78 @@ func TestTransaction_Validate(t *testing.T) {
 }
 
 func TestTransaction_Validate_Error(t *testing.T) {
+	description := "food"
+	transactionDate := time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC)
+	amount := 40.50
+
 	testCases := map[string]struct {
 		input   *RecordRequest
 		wantErr string
 	}{
+		"empty transaction": {
+			input:   nil,
+			wantErr: "required",
+		},
+		"empty description": {
+			input: &RecordRequest{
+				Description:     "",
+				TransactionDate: transactionDate,
+				Amount:          amount,
+			},
+			wantErr: "required",
+		},
 		"description more than 50 characters": {
 			input: &RecordRequest{
 				Description: "more than 50 characters, more than 50 characters!!!",
 			},
-			wantErr: "description must not exceed 50 characters",
+			wantErr: "not exceed 50 characters",
 		},
-
+		"empty date": {
+			input: &RecordRequest{
+				Description:     description,
+				TransactionDate: time.Time{},
+				Amount:          amount,
+			},
+			wantErr: "required",
+		},
 		"invalid date": {
 			input: &RecordRequest{
+				Description:     description,
 				TransactionDate: time.Date(-999, -99, -99, 0, 0, 0, 0, time.UTC),
+				Amount:          40.50,
 			},
 			wantErr: "invalid date format",
 		},
+		"empty amount": {
+			input: &RecordRequest{
+				Description:     description,
+				TransactionDate: transactionDate,
+				Amount:          math.NaN(),
+			},
+			wantErr: "required",
+		},
 		"negative amount": {
 			input: &RecordRequest{
-				Amount: -1,
+				Description:     description,
+				TransactionDate: transactionDate,
+				Amount:          -1,
 			},
-			wantErr: "amount must be a positive number",
+			wantErr: "positive number",
 		},
-		"not rounded to the nearest cent": {
+		"not rounded to two decimal places": {
 			input: &RecordRequest{
-				Amount: 9.555,
+				Description:     description,
+				TransactionDate: transactionDate,
+				Amount:          9.5579,
 			},
-			wantErr: "amount must be rounded to the nearest cent",
+			wantErr: "two decimal places",
 		},
 	}
 
 	for title, tc := range testCases {
 		t.Run(title, func(t *testing.T) {
 			gotErr := tc.input.validate()
-			assert.EqualError(t, gotErr, tc.wantErr)
+			assert.ErrorContains(t, gotErr, tc.wantErr)
 		})
 	}
 }
