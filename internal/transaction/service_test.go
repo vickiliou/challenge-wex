@@ -29,13 +29,13 @@ func (s *stubRepository) FindByID(ctx context.Context, id string) (*Transaction,
 }
 
 type stubGateway struct {
-	receivedTxnDate time.Time
-	getExchangeRate func(txnDate time.Time) (*gateway.CurrencyExchangeRate, error)
+	receivedGwInput gateway.CurrencyExchangeRateRequest
+	getExchangeRate func(input gateway.CurrencyExchangeRateRequest) (*gateway.CurrencyExchangeRate, error)
 }
 
-func (s *stubGateway) GetExchangeRate(txnDate time.Time) (*gateway.CurrencyExchangeRate, error) {
-	s.receivedTxnDate = txnDate
-	return s.getExchangeRate(txnDate)
+func (s *stubGateway) GetExchangeRate(input gateway.CurrencyExchangeRateRequest) (*gateway.CurrencyExchangeRate, error) {
+	s.receivedGwInput = input
+	return s.getExchangeRate(input)
 }
 
 func TestService_Create(t *testing.T) {
@@ -141,7 +141,7 @@ func TestService_Get(t *testing.T) {
 	}
 
 	mockGw := &stubGateway{
-		getExchangeRate: func(txnDate time.Time) (*gateway.CurrencyExchangeRate, error) {
+		getExchangeRate: func(input gateway.CurrencyExchangeRateRequest) (*gateway.CurrencyExchangeRate, error) {
 			return &gateway.CurrencyExchangeRate{
 				CountryCurrencyDesc: "Brazil-Real",
 				ExchangeRate:        "3.456",
@@ -149,8 +149,14 @@ func TestService_Get(t *testing.T) {
 		},
 	}
 
+	input := RetrieveRequest{
+		ID:              id,
+		CurrencyCountry: "Brazil",
+		CurrencyCode:    "Real",
+	}
+
 	svc := NewService(mockRepo, mockGw, mockIDGen)
-	got, gotErr := svc.Get(context.Background(), id)
+	got, gotErr := svc.Get(context.Background(), input)
 	assert.NoError(t, gotErr)
 
 	want := &RetrieveResponse{
@@ -161,22 +167,33 @@ func TestService_Get(t *testing.T) {
 		ExchangeRate:    3.456,
 		ConvertedAmount: 79.90,
 	}
+
+	wantGwInput := gateway.CurrencyExchangeRateRequest{
+		TransactionDate: retrieve.TransactionDate,
+		CurrencyCountry: input.CurrencyCountry,
+		CurrencyCode:    input.CurrencyCode,
+	}
+
 	assert.Equal(t, want, got)
 	assert.Equal(t, id, mockRepo.receivedFindInput)
-	assert.Equal(t, retrieve.TransactionDate, mockGw.receivedTxnDate)
+	assert.Equal(t, wantGwInput, mockGw.receivedGwInput)
 }
 
 func TestService_Get_Error(t *testing.T) {
 	someErr := errors.New("some error")
 
 	testCases := map[string]struct {
-		input    string
+		input    RetrieveRequest
 		mockRepo *stubRepository
 		mockGw   *stubGateway
 		wantErr  error
 	}{
 		"validation error": {
-			input: "invalid-uuid",
+			input: RetrieveRequest{
+				ID:              "invalid-uuid",
+				CurrencyCountry: "Brazil",
+				CurrencyCode:    "Real",
+			},
 			mockRepo: &stubRepository{
 				findByID: func(ctx context.Context, id string) (*Transaction, error) {
 					return nil, nil
@@ -186,7 +203,11 @@ func TestService_Get_Error(t *testing.T) {
 			wantErr: httpresponse.ErrValidation,
 		},
 		"repository error": {
-			input: "b62a64c9-0008-4148-99f6-9c8086a1dd42",
+			input: RetrieveRequest{
+				ID:              "b62a64c9-0008-4148-99f6-9c8086a1dd42",
+				CurrencyCountry: "Brazil",
+				CurrencyCode:    "Real",
+			},
 			mockRepo: &stubRepository{
 				findByID: func(ctx context.Context, id string) (*Transaction, error) {
 					return nil, someErr
@@ -196,7 +217,11 @@ func TestService_Get_Error(t *testing.T) {
 			wantErr: someErr,
 		},
 		"gateway error": {
-			input: "b62a64c9-0008-4148-99f6-9c8086a1dd42",
+			input: RetrieveRequest{
+				ID:              "b62a64c9-0008-4148-99f6-9c8086a1dd42",
+				CurrencyCountry: "Brazil",
+				CurrencyCode:    "Real",
+			},
 			mockRepo: &stubRepository{
 				findByID: func(ctx context.Context, id string) (*Transaction, error) {
 					return &Transaction{
@@ -208,7 +233,7 @@ func TestService_Get_Error(t *testing.T) {
 				},
 			},
 			mockGw: &stubGateway{
-				getExchangeRate: func(txnDate time.Time) (*gateway.CurrencyExchangeRate, error) {
+				getExchangeRate: func(input gateway.CurrencyExchangeRateRequest) (*gateway.CurrencyExchangeRate, error) {
 					return nil, someErr
 				},
 			},

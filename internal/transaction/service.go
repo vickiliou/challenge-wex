@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/vickiliou/challenge-wex/gateway"
 	"github.com/vickiliou/challenge-wex/internal/httpresponse"
@@ -16,7 +15,7 @@ type repository interface {
 }
 
 type gatewayExchangeRate interface {
-	GetExchangeRate(txnDate time.Time) (*gateway.CurrencyExchangeRate, error)
+	GetExchangeRate(input gateway.CurrencyExchangeRateRequest) (*gateway.CurrencyExchangeRate, error)
 }
 
 type uuidGenerator func() string
@@ -54,17 +53,23 @@ func (s *Service) Create(ctx context.Context, input RecordRequest) (string, erro
 }
 
 // Get retrieves a transaction by its ID.
-func (s *Service) Get(ctx context.Context, id string) (*RetrieveResponse, error) {
-	if ok := isValidUUID(id); !ok {
-		return nil, fmt.Errorf("%w: id must be a valid UUID", httpresponse.ErrValidation)
+func (s *Service) Get(ctx context.Context, input RetrieveRequest) (*RetrieveResponse, error) {
+	if err := input.validate(); err != nil {
+		return nil, fmt.Errorf("%w: %s", httpresponse.ErrValidation, err.Error())
 	}
 
-	txn, err := s.repo.FindByID(ctx, id)
+	txn, err := s.repo.FindByID(ctx, input.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error calling database: %s", err.Error())
 	}
 
-	exchangeRate, err := s.gw.GetExchangeRate(txn.TransactionDate)
+	inputGw := gateway.CurrencyExchangeRateRequest{
+		TransactionDate: txn.TransactionDate,
+		CurrencyCountry: input.CurrencyCountry,
+		CurrencyCode:    input.CurrencyCode,
+	}
+
+	exchangeRate, err := s.gw.GetExchangeRate(inputGw)
 	if err != nil {
 		return nil, fmt.Errorf("error calling gateway: %s", err.Error())
 	}

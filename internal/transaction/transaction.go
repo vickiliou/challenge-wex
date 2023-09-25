@@ -28,6 +28,13 @@ type RecordResponse struct {
 	ID string `json:"id"`
 }
 
+// RetrieveRequest represents a request to retrieve user transaction data.
+type RetrieveRequest struct {
+	ID              string `json:"id"`
+	CurrencyCountry string `json:"currency_country"`
+	CurrencyCode    string `json:"currency_code"`
+}
+
 // RetrieveResponse represents user transaction data.
 type RetrieveResponse struct {
 	ID              string    `json:"id"`
@@ -38,7 +45,7 @@ type RetrieveResponse struct {
 	ConvertedAmount float64   `json:"converted_amount"`
 }
 
-// validate checks if the request data is valid.
+// validate checks if the record request data is valid.
 func (r *RecordRequest) validate() error {
 	if r == nil {
 		return errors.New("all fields are required")
@@ -59,9 +66,24 @@ func (r *RecordRequest) validate() error {
 	return nil
 }
 
+// validate checks if the retrieve request data is valid.
+func (r *RetrieveRequest) validate() error {
+	if isValidUUID(r.ID) {
+		return errors.New("invalid UUID")
+	}
+	if isEmpty(r.CurrencyCountry) {
+		return errors.New("currency country is required")
+	}
+
+	if isEmpty(r.CurrencyCode) {
+		return errors.New("currency code is required")
+	}
+	return nil
+}
+
 // validateDescription checks if the description field is a valid RFC3339 formatted timestamp and not empty.
 func validateDescription(description string) error {
-	if len(description) == 0 {
+	if isEmpty(description) {
 		return errors.New("description is required")
 	}
 
@@ -91,7 +113,7 @@ func validateAmount(amount float64) error {
 		return errors.New("amount is required")
 	}
 
-	if amount < 0 {
+	if amount <= 0 {
 		return errors.New("amount must be a positive number")
 	}
 
@@ -105,7 +127,12 @@ func validateAmount(amount float64) error {
 // isValidUUID checks if a given string is a valid UUID.
 func isValidUUID(id string) bool {
 	_, err := uuid.Parse(id)
-	return err == nil
+	return err != nil
+}
+
+// isEmpty checks if a given string is empty.
+func isEmpty(s string) bool {
+	return len(s) == 0
 }
 
 // roundTwoDecimal rounds a float number to two decimal places.

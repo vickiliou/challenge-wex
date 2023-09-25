@@ -10,11 +10,19 @@ import (
 )
 
 const (
-	baseURL  = "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/"
-	endpoint = "v1/accounting/od/rates_of_exchange"
-	fields   = "?fields=country_currency_desc,exchange_rate,record_date"
-	sort     = "&sort=-record_date"
+	baseURL    = "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/"
+	endpoint   = "v1/accounting/od/rates_of_exchange"
+	fields     = "?fields=country_currency_desc,exchange_rate,record_date"
+	sort       = "&sort=-record_date"
+	dateFormat = "2006-01-02"
 )
+
+// CurrencyExchangeRateRequest represents the request structure for exchange rate.
+type CurrencyExchangeRateRequest struct {
+	TransactionDate time.Time
+	CurrencyCountry string
+	CurrencyCode    string
+}
 
 // CurrencyExchangeRate represents currency exchange rate data.
 type CurrencyExchangeRate struct {
@@ -44,8 +52,8 @@ func NewGateway(httpClient httpClient) *Gateway {
 }
 
 // GetExchangeRate fetches the exchange rate for a specific date and returns the closest available rate.
-func (g *Gateway) GetExchangeRate(txnDate time.Time) (*CurrencyExchangeRate, error) {
-	url := constructExchangeRateURL(txnDate)
+func (g *Gateway) GetExchangeRate(input CurrencyExchangeRateRequest) (*CurrencyExchangeRate, error) {
+	url := constructExchangeRateURL(input)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create http request: %v", err.Error())
@@ -75,15 +83,12 @@ func (g *Gateway) GetExchangeRate(txnDate time.Time) (*CurrencyExchangeRate, err
 
 // constructExchangeRateURL constructs the URL for fetching exchange rates based on
 // the target country, target currency, and transaction date.
-func constructExchangeRateURL(txnDate time.Time) string {
-	targetCountry := "Canada"
-	targetCurrency := "Dollar"
-
-	sixMonthsAgo := txnDate.AddDate(0, -6, 0).Format("2006-01-02")
-	fmtTxnDate := txnDate.Format("2006-01-02")
+func constructExchangeRateURL(input CurrencyExchangeRateRequest) string {
+	sixMonthsAgo := input.TransactionDate.AddDate(0, -6, 0).Format(dateFormat)
+	fmtTxnDate := input.TransactionDate.Format(dateFormat)
 
 	filterParam := fmt.Sprintf("&filter=country_currency_desc:eq:%s-%s,record_date:lte:%s,record_date:gte:%s",
-		targetCountry, targetCurrency, fmtTxnDate, sixMonthsAgo)
+		input.CurrencyCountry, input.CurrencyCode, fmtTxnDate, sixMonthsAgo)
 
 	url := baseURL + endpoint + fields + filterParam + sort
 

@@ -18,20 +18,20 @@ import (
 )
 
 type stubService struct {
-	receivedInput transaction.RecordRequest
-	create        func(ctx context.Context, input transaction.RecordRequest) (string, error)
-	receivedID    string
-	get           func(ctx context.Context, id string) (*transaction.RetrieveResponse, error)
+	receivedRecordRequest    transaction.RecordRequest
+	create                   func(ctx context.Context, input transaction.RecordRequest) (string, error)
+	receivedRetrievedRequest transaction.RetrieveRequest
+	get                      func(ctx context.Context, input transaction.RetrieveRequest) (*transaction.RetrieveResponse, error)
 }
 
 func (s *stubService) Create(ctx context.Context, input transaction.RecordRequest) (string, error) {
-	s.receivedInput = input
+	s.receivedRecordRequest = input
 	return s.create(ctx, input)
 }
 
-func (s *stubService) Get(ctx context.Context, id string) (*transaction.RetrieveResponse, error) {
-	s.receivedID = id
-	return s.get(ctx, id)
+func (s *stubService) Get(ctx context.Context, input transaction.RetrieveRequest) (*transaction.RetrieveResponse, error) {
+	s.receivedRetrievedRequest = input
+	return s.get(ctx, input)
 }
 
 func TestTransaction_Store(t *testing.T) {
@@ -66,7 +66,7 @@ func TestTransaction_Store(t *testing.T) {
 
 	assert.Equal(t, http.StatusCreated, w.Code)
 	assert.Equal(t, want, got)
-	assert.Equal(t, input, mockSvc.receivedInput)
+	assert.Equal(t, input, mockSvc.receivedRecordRequest)
 }
 
 func TestTransaction_Store_Error(t *testing.T) {
@@ -77,7 +77,7 @@ func TestTransaction_Store_Error(t *testing.T) {
 		mockSvc        *stubService
 		wantStatusCode int
 	}{
-		"invalid json body": {
+		"invalid json request body": {
 			reqBody: func() []byte {
 				jsonValue, _ := json.Marshal(",")
 				return jsonValue
@@ -150,13 +150,20 @@ func TestTransaction_Retrieve(t *testing.T) {
 	}
 
 	mockSvc := &stubService{
-		get: func(ctx context.Context, id string) (*transaction.RetrieveResponse, error) {
+		get: func(ctx context.Context, input transaction.RetrieveRequest) (*transaction.RetrieveResponse, error) {
 			return &want, nil
 		},
 	}
 
+	input := transaction.RetrieveRequest{
+		ID:              id,
+		CurrencyCountry: "Brazil",
+		CurrencyCode:    "Real",
+	}
+	body, _ := json.Marshal(input)
+
 	path := fmt.Sprintf("/transactions/%s", id)
-	req := httptest.NewRequest(http.MethodGet, path, nil)
+	req := httptest.NewRequest(http.MethodGet, path, bytes.NewReader(body))
 	w := httptest.NewRecorder()
 
 	h := NewHandler(mockSvc)
@@ -169,46 +176,86 @@ func TestTransaction_Retrieve(t *testing.T) {
 		t.Fatalf("unmarshal error: %v", err)
 	}
 
+	wantRetrievedRequest := transaction.RetrieveRequest{
+		ID:              id,
+		CurrencyCountry: input.CurrencyCountry,
+		CurrencyCode:    input.CurrencyCode,
+	}
+
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Equal(t, want, got)
-	assert.Equal(t, id, mockSvc.receivedID)
+	assert.Equal(t, wantRetrievedRequest, mockSvc.receivedRetrievedRequest)
 }
 
 func TestTransaction_Retrieve_Error(t *testing.T) {
 	id := "b62a64c9-0008-4148-99f6-9c8086a1dd42"
 	someErr := errors.New("some error")
+	retrieveRequest := transaction.RetrieveRequest{
+		ID:              id,
+		CurrencyCountry: "Brazil",
+		CurrencyCode:    "Real",
+	}
 
 	testCases := map[string]struct {
+		reqBody        func() []byte
 		mockSvc        *stubService
 		wantStatusCode int
 	}{
-		"validation error": {
+		"invalid json request body": {
+			reqBody: func() []byte {
+				jsonValue, _ := json.Marshal(",")
+				return jsonValue
+			},
 			mockSvc: &stubService{
-				get: func(ctx context.Context, id string) (*transaction.RetrieveResponse, error) {
+				get: func(ctx context.Context, input transaction.RetrieveRequest) (*transaction.RetrieveResponse, error) {
+					return nil, nil
+				},
+			},
+			wantStatusCode: http.StatusBadRequest,
+		},
+		"validation error": {
+			reqBody: func() []byte {
+				jsonValue, _ := json.Marshal(retrieveRequest)
+				return jsonValue
+			},
+			mockSvc: &stubService{
+				get: func(ctx context.Context, input transaction.RetrieveRequest) (*transaction.RetrieveResponse, error) {
 					return nil, httpresponse.ErrValidation
 				},
 			},
 			wantStatusCode: http.StatusBadRequest,
 		},
 		"not found error": {
+			reqBody: func() []byte {
+				jsonValue, _ := json.Marshal(retrieveRequest)
+				return jsonValue
+			},
 			mockSvc: &stubService{
-				get: func(ctx context.Context, id string) (*transaction.RetrieveResponse, error) {
+				get: func(ctx context.Context, input transaction.RetrieveRequest) (*transaction.RetrieveResponse, error) {
 					return nil, httpresponse.ErrNotFound
 				},
 			},
 			wantStatusCode: http.StatusNotFound,
 		},
 		"no exchange rate": {
+			reqBody: func() []byte {
+				jsonValue, _ := json.Marshal(retrieveRequest)
+				return jsonValue
+			},
 			mockSvc: &stubService{
-				get: func(ctx context.Context, id string) (*transaction.RetrieveResponse, error) {
+				get: func(ctx context.Context, input transaction.RetrieveRequest) (*transaction.RetrieveResponse, error) {
 					return nil, httpresponse.ErrConvertTargetCurrency
 				},
 			},
 			wantStatusCode: http.StatusBadRequest,
 		},
 		"service error": {
+			reqBody: func() []byte {
+				jsonValue, _ := json.Marshal(retrieveRequest)
+				return jsonValue
+			},
 			mockSvc: &stubService{
-				get: func(ctx context.Context, id string) (*transaction.RetrieveResponse, error) {
+				get: func(ctx context.Context, input transaction.RetrieveRequest) (*transaction.RetrieveResponse, error) {
 					return nil, someErr
 				},
 			},
@@ -219,7 +266,8 @@ func TestTransaction_Retrieve_Error(t *testing.T) {
 	for title, tc := range testCases {
 		t.Run(title, func(t *testing.T) {
 			path := fmt.Sprintf("/transactions/%s", id)
-			req := httptest.NewRequest(http.MethodGet, path, nil)
+
+			req := httptest.NewRequest(http.MethodGet, path, bytes.NewReader(tc.reqBody()))
 			w := httptest.NewRecorder()
 
 			h := NewHandler(tc.mockSvc)

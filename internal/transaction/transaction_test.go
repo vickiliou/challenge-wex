@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTransaction_Validate(t *testing.T) {
+func TestTransaction_RecordRequest_Validate(t *testing.T) {
 	t.Run("valid input", func(t *testing.T) {
 		input := &RecordRequest{
 			Description:     "food",
@@ -20,7 +20,7 @@ func TestTransaction_Validate(t *testing.T) {
 	})
 }
 
-func TestTransaction_Validate_Error(t *testing.T) {
+func TestTransaction_RecordRequest_Validate_Error(t *testing.T) {
 	description := "food"
 	transactionDate := time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC)
 	amount := 40.50
@@ -97,26 +97,56 @@ func TestTransaction_Validate_Error(t *testing.T) {
 	}
 }
 
-func TestTransaction_IsValidUUID(t *testing.T) {
+func TestTransaction_RetrieveRequest_Validate(t *testing.T) {
+	t.Run("valid input", func(t *testing.T) {
+		input := &RetrieveRequest{
+			ID:              "b62a64c9-0008-4148-99f6-9c8086a1dd42",
+			CurrencyCountry: "Brazil",
+			CurrencyCode:    "Real",
+		}
+		gotErr := input.validate()
+		assert.Nil(t, gotErr)
+	})
+}
+
+func TestTransaction_RetrieveRequest_Validate_Error(t *testing.T) {
+	id := "b62a64c9-0008-4148-99f6-9c8086a1dd42"
+	currencyCountry := "Brazil"
+	currencyCode := "Real"
+
 	testCases := map[string]struct {
-		input string
-		want  bool
+		input     *RetrieveRequest
+		wantError string
 	}{
-		"valid UUID": {
-			input: "b62a64c9-0008-4148-99f6-9c8086a1dd42",
-			want:  true,
+		"invalid uuid": {
+			input: &RetrieveRequest{
+				ID:              "invalid-uuid",
+				CurrencyCountry: currencyCountry,
+				CurrencyCode:    currencyCode,
+			},
+			wantError: "invalid UUID",
 		},
-		"invalid UUID": {
-			input: "invalid-uuid",
-			want:  false,
+		"empty currency country": {
+			input: &RetrieveRequest{
+				ID:              id,
+				CurrencyCountry: "",
+				CurrencyCode:    currencyCode,
+			},
+			wantError: "required",
+		},
+		"empty currency code": {
+			input: &RetrieveRequest{
+				ID:              id,
+				CurrencyCountry: currencyCountry,
+				CurrencyCode:    "",
+			},
+			wantError: "required",
 		},
 	}
-
 	for title, tc := range testCases {
 		t.Run(title, func(t *testing.T) {
-			got := isValidUUID(tc.input)
-			assert.Equal(t, tc.want, got)
+			gotErr := tc.input.validate()
+			assert.ErrorContains(t, gotErr, tc.wantError)
 		})
 	}
-
 }

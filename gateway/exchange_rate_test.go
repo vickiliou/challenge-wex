@@ -71,9 +71,13 @@ func TestGetExchangeRate(t *testing.T) {
 			}
 
 			gw := NewGateway(mockClient)
-			txnDate := time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC)
+			input := CurrencyExchangeRateRequest{
+				TransactionDate: time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
+				CurrencyCountry: "Canada",
+				CurrencyCode:    "Dollar",
+			}
 
-			got, gotErr := gw.GetExchangeRate(txnDate)
+			got, gotErr := gw.GetExchangeRate(input)
 			assert.NoError(t, gotErr)
 			assert.Equal(t, tc.want, got)
 		})
@@ -135,9 +139,14 @@ func TestGetExchangeRate_Error(t *testing.T) {
 	for title, tc := range testCases {
 		t.Run(title, func(t *testing.T) {
 			gw := NewGateway(tc.mockClient)
-			txnDate := time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC)
 
-			got, gotErr := gw.GetExchangeRate(txnDate)
+			input := CurrencyExchangeRateRequest{
+				TransactionDate: time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
+				CurrencyCountry: "Canada",
+				CurrencyCode:    "Dollar",
+			}
+
+			got, gotErr := gw.GetExchangeRate(input)
 			assert.Nil(t, got)
 			assert.ErrorContains(t, gotErr, tc.wantErr)
 		})
