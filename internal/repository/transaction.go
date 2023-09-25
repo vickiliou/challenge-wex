@@ -32,7 +32,7 @@ func (r *Repository) Create(ctx context.Context, txn transaction.Transaction) (s
 		txn.ID, txn.Description, txn.TransactionDate, txn.Amount)
 
 	if err != nil {
-		return "", fmt.Errorf("failed to create transaction: %s", err.Error())
+		return "", fmt.Errorf("failed to create transaction: %w", err)
 	}
 
 	return txn.ID, nil
@@ -52,9 +52,9 @@ func (r *Repository) FindByID(ctx context.Context, id string) (*transaction.Tran
 	var txn transaction.Transaction
 	if err := row.Scan(&txn.ID, &txn.Description, &txn.TransactionDate, &txn.Amount); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, fmt.Errorf("%w: transaction with ID %s", httpresponse.ErrNotFound, id)
+			return nil, fmt.Errorf("%w transaction ID %s", httpresponse.ErrNotFound, id)
 		}
-		return nil, fmt.Errorf("failed to retrieve transaction: %s", err.Error())
+		return nil, fmt.Errorf("failed to retrieve transaction: %w", err)
 	}
 
 	return &txn, nil

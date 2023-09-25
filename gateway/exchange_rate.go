@@ -56,12 +56,12 @@ func (g *Gateway) GetExchangeRate(input CurrencyExchangeRateRequest) (*CurrencyE
 	url := constructExchangeRateURL(input)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create http request: %v", err.Error())
+		return nil, fmt.Errorf("failed to create http request: %w", err)
 	}
 
 	res, err := g.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch exchange rates: %v", err.Error())
+		return nil, fmt.Errorf("failed to fetch exchange rates: %w", err)
 	}
 	defer res.Body.Close()
 
@@ -71,7 +71,7 @@ func (g *Gateway) GetExchangeRate(input CurrencyExchangeRateRequest) (*CurrencyE
 
 	var resp CurrencyExchangeRateResponse
 	if err := json.NewDecoder(res.Body).Decode(&resp); err != nil {
-		return nil, fmt.Errorf("failed to decode exchange rates response: %v", err)
+		return nil, fmt.Errorf("failed to decode exchange rates response: %w", err)
 	}
 
 	if len(resp.Data) == 0 {

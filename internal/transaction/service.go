@@ -60,7 +60,7 @@ func (s *Service) Get(ctx context.Context, input RetrieveRequest) (*RetrieveResp
 
 	txn, err := s.repo.FindByID(ctx, input.ID)
 	if err != nil {
-		return nil, fmt.Errorf("error calling database: %s", err.Error())
+		return nil, fmt.Errorf("error calling database: %w", err)
 	}
 
 	inputGw := gateway.CurrencyExchangeRateRequest{
@@ -71,12 +71,12 @@ func (s *Service) Get(ctx context.Context, input RetrieveRequest) (*RetrieveResp
 
 	exchangeRate, err := s.gw.GetExchangeRate(inputGw)
 	if err != nil {
-		return nil, fmt.Errorf("error calling gateway: %s", err.Error())
+		return nil, fmt.Errorf("error calling gateway: %w", err)
 	}
 
 	exchangeRateFloat, err := strconv.ParseFloat(exchangeRate.ExchangeRate, 64)
 	if err != nil {
-		return nil, fmt.Errorf("error converting exchange rate: %s", err.Error())
+		return nil, fmt.Errorf("error converting exchange rate: %w", err)
 	}
 
 	return &RetrieveResponse{
