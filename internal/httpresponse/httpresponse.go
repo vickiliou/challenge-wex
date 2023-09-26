@@ -28,7 +28,7 @@ func RespondJSON(w http.ResponseWriter, statusCode int, body any) {
 
 	if err := json.NewEncoder(w).Encode(body); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		LogError("Error enconding response", http.StatusInternalServerError, err)
+		LogError("Error encoding response", http.StatusInternalServerError, err)
 		return
 	}
 }
