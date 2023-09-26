@@ -1,0 +1,157 @@
+openapi: 3.0.0
+info:
+  title: Transaction API
+  description: API for managing transactions
+  version: 1.0.0
+servers:
+  - url: https://wex.com/v1
+tags:
+ - name: transactions
+
+paths:
+  /transactions:
+    post:
+      tags:
+        - transactions
+      summary: Create a new transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecordRequest"
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecordResponse"
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '500':
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /transactions/{id}:
+    get:
+      tags:
+        - transactions
+      summary: Retrieve a transaction by ID
+      description: Retrieve a transaction by ID and convert it to supported currencies based on the latest exchange rates within the past 6 months.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the transaction to retrieve
+          schema:
+            type: string
+        - name: country
+          in: query
+          description: Country of the transaction
+          schema:
+            type: string
+        - name: currency
+          in: query
+          description: Currency of the transaction
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RetrieveResponse"
+        '400':
+          description: Validation error or no currency conversion found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '404':
+          description: Transaction not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '500':
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    RecordRequest:
+      type: object
+      properties:
+        description:
+          type: string
+          maxLength: 50
+          example: food
+        transaction_date:
+          type: string
+          format: date-time
+          example: 2023-09-26T17:00:00.000Z
+        amount:
+          type: number
+          format: float
+          multipleOf: 0.01
+          example: 23.12
+
+    RecordResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: d2d789ce-743b-40df-8177-35e823bf0b14
+
+    RetrieveResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: d2d789ce-743b-40df-8177-35e823bf0b14
+        description:
+          type: string
+          example: food
+        transaction_date:
+          type: string
+          format: date-time
+          example: 2023-09-26T17:00:00.000Z
+        original_amount:
+          type: number
+          format: float
+          multipleOf: 0.01
+          example: 23.12
+        exchange_rate:
+          type: number
+          format: float
+          example: 3.456
+        converted_amount:
+          type: number
+          format: float
+          multipleOf: 0.01
+          example: 79.90
+          
+    ErrorResponse:
+      type: object
+      properties:
+        status_code:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: some error message
+  
