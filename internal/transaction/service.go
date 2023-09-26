@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/vickiliou/challenge-wex/gateway"
+	"github.com/vickiliou/challenge-wex/internal/gateway"
 	"github.com/vickiliou/challenge-wex/internal/httpresponse"
 )
 

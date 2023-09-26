@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
-	"github.com/vickiliou/challenge-wex/gateway"
+	"github.com/vickiliou/challenge-wex/internal/gateway"
 	"github.com/vickiliou/challenge-wex/internal/httphandler"
 	"github.com/vickiliou/challenge-wex/internal/repository"
 	"github.com/vickiliou/challenge-wex/internal/transaction"

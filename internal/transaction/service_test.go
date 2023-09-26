@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vickiliou/challenge-wex/gateway"
+	"github.com/vickiliou/challenge-wex/internal/gateway"
 	"github.com/vickiliou/challenge-wex/internal/httpresponse"
 )
 
