@@ -25,8 +25,8 @@ func SetupRouter(db *sql.DB) *chi.Mux {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	r.Post("/transactions", h.Store)
-	r.Get("/transactions/{id}", h.Retrieve)
+	r.Post("/v1/transactions", h.Store)
+	r.Get("/v1/transactions/{id}", h.Retrieve)
 
 	return r
 }
