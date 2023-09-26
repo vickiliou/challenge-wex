@@ -45,7 +45,7 @@ paths:
       tags:
         - transactions
       summary: Retrieve a transaction by ID
-      description: Retrieve a transaction by ID and convert it to supported currencies based on the latest exchange rates within the past 6 months.
+      description: Retrieve a specific transaction and convert the original amount to a specific country currency supported by the Treasury Reporting Rates of Exchange API. This operation is based on the latest exchange rates within the past 6 months.
       parameters:
         - name: id
           in: path
