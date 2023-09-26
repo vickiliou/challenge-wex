@@ -132,7 +132,7 @@ func TestGetExchangeRate_Error(t *testing.T) {
 					}, nil
 				},
 			},
-			wantErr: httpresponse.ErrConvertTargetCurrency.Error(),
+			wantErr: httpresponse.ErrNoCurrencyConversion.Error(),
 		},
 	}
 

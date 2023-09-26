@@ -80,7 +80,7 @@ func (h *Handler) Retrieve(w http.ResponseWriter, r *http.Request) {
 			httpresponse.RespondWithError(w, http.StatusNotFound, err)
 			httpresponse.LogError("Not found", http.StatusNotFound, err)
 			return
-		case errors.Is(err, httpresponse.ErrConvertTargetCurrency):
+		case errors.Is(err, httpresponse.ErrNoCurrencyConversion):
 			httpresponse.RespondWithError(w, http.StatusBadRequest, err)
 			httpresponse.LogError("Bad request", http.StatusBadRequest, err)
 			return

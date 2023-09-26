@@ -211,7 +211,7 @@ func TestTransaction_Retrieve_Error(t *testing.T) {
 		"no exchange rate": {
 			mockSvc: &stubService{
 				get: func(ctx context.Context, input transaction.RetrieveRequest) (*transaction.RetrieveResponse, error) {
-					return nil, httpresponse.ErrConvertTargetCurrency
+					return nil, httpresponse.ErrNoCurrencyConversion
 				},
 			},
 			wantStatusCode: http.StatusBadRequest,

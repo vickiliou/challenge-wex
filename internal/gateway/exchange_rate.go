@@ -75,7 +75,7 @@ func (g *Gateway) GetExchangeRate(input CurrencyExchangeRateRequest) (*CurrencyE
 	}
 
 	if len(resp.Data) == 0 {
-		return nil, httpresponse.ErrConvertTargetCurrency
+		return nil, httpresponse.ErrNoCurrencyConversion
 	}
 
 	return &resp.Data[0], nil

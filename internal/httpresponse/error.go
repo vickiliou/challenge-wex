@@ -13,8 +13,8 @@ var (
 	// ErrNotFound indicates that a resource was not found.
 	ErrNotFound = errors.New("not found")
 
-	// // ErrConvertTargetCurrency is returned when a currency cannot be converted to the target currency due to an empty exchange rate.
-	ErrConvertTargetCurrency = errors.New("cannot be converted to the target currency")
+	// ErrNoCurrencyConversion indicates that no currency conversion rate data was available within 6 months before the purchase date.
+	ErrNoCurrencyConversion = errors.New("no currency conversion rate available within 6 months before the purchase date")
 
 	// ErrInvalidRequestPayload indicates that the http request payload is invalid.
 	ErrInvalidRequestPayload = errors.New("invalid request payload")
