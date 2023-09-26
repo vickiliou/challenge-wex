@@ -21,5 +21,18 @@ func main() {
 	defer db.Close()
 
 	r := config.SetupRouter(db)
-	http.ListenAndServe(":8082", r)
+
+	errCh := make(chan error, 1)
+
+	go func() {
+		slog.Info("Starting server")
+		if err := http.ListenAndServe(":8082", r); err != nil {
+			errCh <- err
+		}
+	}()
+
+	if err := <-errCh; err != nil {
+		slog.Error("Server error", slog.String("error", err.Error()))
+	}
+
 }
