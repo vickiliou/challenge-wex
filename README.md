@@ -15,7 +15,14 @@ Transaction API is a challenge proposed by the company Wex, which allows users t
 
 ```
 docker build -t app .
-docker run -p 8082:8082 --rm app
+docker run -p 8082:8082 --rm --name txn app
+```
+
+### Access Database
+
+```
+docker exec -it txn sh
+sqlite3 wex.db
 ```
 
 ## API documentation

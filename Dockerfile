@@ -2,7 +2,7 @@ FROM golang:1.21-alpine
 
 WORKDIR /app
 
-RUN apk --no-cache add gcc libc-dev
+RUN apk --no-cache add gcc musl-dev sqlite
 
 ENV CGO_ENABLED=1
 
