@@ -12,18 +12,18 @@ import (
 )
 
 type stubRepository struct {
-	receivedCreateInput Transaction
-	create              func(ctx context.Context, txn Transaction) (string, error)
+	receivedCreateInput Transactions
+	create              func(ctx context.Context, txn Transactions) (string, error)
 	receivedFindInput   string
-	findByID            func(ctx context.Context, id string) (*Transaction, error)
+	findByID            func(ctx context.Context, id string) (*Transactions, error)
 }
 
-func (s *stubRepository) Create(ctx context.Context, txn Transaction) (string, error) {
+func (s *stubRepository) Create(ctx context.Context, txn Transactions) (string, error) {
 	s.receivedCreateInput = txn
 	return s.create(ctx, txn)
 }
 
-func (s *stubRepository) FindByID(ctx context.Context, id string) (*Transaction, error) {
+func (s *stubRepository) FindByID(ctx context.Context, id string) (*Transactions, error) {
 	s.receivedFindInput = id
 	return s.findByID(ctx, id)
 }
@@ -42,7 +42,7 @@ func TestService_Create(t *testing.T) {
 	id := "b62a64c9-0008-4148-99f6-9c8086a1dd42"
 
 	mockRepo := &stubRepository{
-		create: func(ctx context.Context, txn Transaction) (string, error) {
+		create: func(ctx context.Context, txn Transactions) (string, error) {
 			return id, nil
 		},
 	}
@@ -57,7 +57,7 @@ func TestService_Create(t *testing.T) {
 		Amount:          20.47,
 	}
 
-	want := Transaction{
+	want := Transactions{
 		ID:              id,
 		Description:     input.Description,
 		TransactionDate: input.TransactionDate,
@@ -86,7 +86,7 @@ func TestService_Create_Error(t *testing.T) {
 				Amount:          -5,
 			},
 			mockRepo: &stubRepository{
-				create: func(ctx context.Context, txn Transaction) (string, error) {
+				create: func(ctx context.Context, txn Transactions) (string, error) {
 					return "", nil
 				},
 			},
@@ -99,7 +99,7 @@ func TestService_Create_Error(t *testing.T) {
 				Amount:          20.47,
 			},
 			mockRepo: &stubRepository{
-				create: func(ctx context.Context, txn Transaction) (string, error) {
+				create: func(ctx context.Context, txn Transactions) (string, error) {
 					return "", someErr
 				},
 			},
@@ -123,7 +123,7 @@ func TestService_Create_Error(t *testing.T) {
 
 func TestService_Get(t *testing.T) {
 	id := "b62a64c9-0008-4148-99f6-9c8086a1dd42"
-	retrieve := &Transaction{
+	retrieve := &Transactions{
 		ID:              id,
 		Description:     "food",
 		TransactionDate: time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
@@ -131,7 +131,7 @@ func TestService_Get(t *testing.T) {
 	}
 
 	mockRepo := &stubRepository{
-		findByID: func(ctx context.Context, id string) (*Transaction, error) {
+		findByID: func(ctx context.Context, id string) (*Transactions, error) {
 			return retrieve, nil
 		},
 	}
@@ -195,7 +195,7 @@ func TestService_Get_Error(t *testing.T) {
 				Currency: "Real",
 			},
 			mockRepo: &stubRepository{
-				findByID: func(ctx context.Context, id string) (*Transaction, error) {
+				findByID: func(ctx context.Context, id string) (*Transactions, error) {
 					return nil, nil
 				},
 			},
@@ -209,7 +209,7 @@ func TestService_Get_Error(t *testing.T) {
 				Currency: "Real",
 			},
 			mockRepo: &stubRepository{
-				findByID: func(ctx context.Context, id string) (*Transaction, error) {
+				findByID: func(ctx context.Context, id string) (*Transactions, error) {
 					return nil, someErr
 				},
 			},
@@ -223,8 +223,8 @@ func TestService_Get_Error(t *testing.T) {
 				Currency: "Real",
 			},
 			mockRepo: &stubRepository{
-				findByID: func(ctx context.Context, id string) (*Transaction, error) {
-					return &Transaction{
+				findByID: func(ctx context.Context, id string) (*Transactions, error) {
+					return &Transactions{
 						ID:              id,
 						Description:     "food",
 						TransactionDate: time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),

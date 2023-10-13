@@ -17,14 +17,14 @@ func TestTransaction_Create(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	txn := transaction.Transaction{
+	txn := transaction.Transactions{
 		ID:              "b62a64c9-0008-4148-99f6-9c8086a1dd42",
 		Description:     "food",
 		TransactionDate: time.Date(2023, time.September, 1, 0, 0, 0, 0, time.UTC),
 		Amount:          20.20,
 	}
 
-	mock.ExpectExec(`INSERT INTO "transaction" (id, description, date, amount)  VALUES (?, ?, ?, ?)`).
+	mock.ExpectExec(`INSERT INTO transactions (id, description, date, amount)  VALUES (?, ?, ?, ?)`).
 		WithArgs(txn.ID, txn.Description, txn.TransactionDate, txn.Amount).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
@@ -43,14 +43,14 @@ func TestTransaction_Create_Error(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	txn := transaction.Transaction{
+	txn := transaction.Transactions{
 		ID:              "b62a64c9-0008-4148-99f6-9c8086a1dd42",
 		Description:     "food",
 		TransactionDate: time.Date(2023, time.September, 1, 0, 0, 0, 0, time.UTC),
 		Amount:          20.20,
 	}
 
-	mock.ExpectExec(`INSERT INTO "transaction"`).
+	mock.ExpectExec(`INSERT INTO transactions`).
 		WithArgs(txn.ID, txn.Description, txn.TransactionDate, txn.Amount).
 		WillReturnError(wantErr)
 
@@ -68,7 +68,7 @@ func TestTransaction_FindByID(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	want := &transaction.Transaction{
+	want := &transaction.Transactions{
 		ID:              id,
 		Description:     "food",
 		TransactionDate: time.Date(2023, time.September, 21, 0, 0, 0, 0, time.UTC),
@@ -78,7 +78,7 @@ func TestTransaction_FindByID(t *testing.T) {
 	row := mock.NewRows([]string{"id", "description", "date", "amount"}).
 		AddRow(want.ID, want.Description, want.TransactionDate, want.Amount)
 
-	mock.ExpectQuery(`SELECT id, description, date, amount FROM "transaction" WHERE id = ?`).
+	mock.ExpectQuery(`SELECT id, description, date, amount FROM transactions WHERE id = ?`).
 		WithArgs(id).
 		WillReturnRows(row)
 

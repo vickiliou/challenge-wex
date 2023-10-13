@@ -8,8 +8,8 @@ import (
 	"github.com/google/uuid"
 )
 
-// Transaction represents a transaction stored in the database.
-type Transaction struct {
+// Transactions represents a transaction stored in the database.
+type Transactions struct {
 	ID              string
 	Description     string
 	TransactionDate time.Time

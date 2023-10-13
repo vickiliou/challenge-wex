@@ -23,9 +23,9 @@ func NewRepository(db *sql.DB) *Repository {
 }
 
 // Create inserts a transaction record into the database.
-func (r *Repository) Create(ctx context.Context, txn transaction.Transaction) (string, error) {
+func (r *Repository) Create(ctx context.Context, txn transaction.Transactions) (string, error) {
 	_, err := r.db.ExecContext(ctx, `
-		INSERT INTO "transaction" 
+		INSERT INTO transactions 
 			(id, description, date, amount) 
 		VALUES 
 			(?, ?, ?, ?)`,
@@ -39,17 +39,17 @@ func (r *Repository) Create(ctx context.Context, txn transaction.Transaction) (s
 }
 
 // FindByID retrieves a transaction record by its ID from the database.
-func (r *Repository) FindByID(ctx context.Context, id string) (*transaction.Transaction, error) {
+func (r *Repository) FindByID(ctx context.Context, id string) (*transaction.Transactions, error) {
 	row := r.db.QueryRowContext(ctx, `
 		SELECT
 			id, description, date, amount
 		FROM 
-			"transaction" 
+			transactions 
 		WHERE 
 			id = ?`,
 		id)
 
-	var txn transaction.Transaction
+	var txn transaction.Transactions
 	if err := row.Scan(&txn.ID, &txn.Description, &txn.TransactionDate, &txn.Amount); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("%w transaction ID %s", httpresponse.ErrNotFound, id)

@@ -10,8 +10,8 @@ import (
 )
 
 type repository interface {
-	Create(ctx context.Context, txn Transaction) (string, error)
-	FindByID(ctx context.Context, id string) (*Transaction, error)
+	Create(ctx context.Context, txn Transactions) (string, error)
+	FindByID(ctx context.Context, id string) (*Transactions, error)
 }
 
 type gatewayExchangeRate interface {
@@ -42,7 +42,7 @@ func (s *Service) Create(ctx context.Context, input RecordRequest) (string, erro
 		return "", fmt.Errorf("%w: %s", httpresponse.ErrValidation, err.Error())
 	}
 
-	txn := Transaction{
+	txn := Transactions{
 		ID:              s.idGenerator(),
 		Description:     input.Description,
 		TransactionDate: input.TransactionDate,
